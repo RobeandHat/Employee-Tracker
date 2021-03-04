@@ -19,50 +19,51 @@ connection.connect((err) => {
   startSearch();
 });
 
-function startSearch = () => {
+function startSearch() {
   inquirer
     .prompt({
       type: "list",
       message: "What would you like to do?",
       name: "initial",
       choices: [
-        "View All Employees",
-        "View All Employees by Department",
-        "View All Employees by Manager",
-        "Add Employee",
-        "Remove Employee",
-        "Update Employee Role",
-        "Update Employee Manager",
+        "View all employees",
+        "View all departments",
+        "View all roles",
+        "Add department",
+        "Add role",
+        "Add employee",
+        "Update employee role",
         "exit",
       ],
-    }).then((response) => {
+    })
+    .then((response) => {
       switch (response.initial) {
-        case "View All Employees":
+        case "View all employees":
           employeeSearch();
           break;
 
-        case "View All Employees by Department":
+        case "View all departments":
           deptSearch();
           break;
 
-        case "View All Employees by Manager":
-          managerSearch();
+        case "View all roles":
+          roleSearch();
           break;
 
-        case "Add Employee":
+        case "Add employee":
           addEmployee();
           break;
 
-        case "Remove Employee":
-          removeEmployee();
+        case "Add role":
+          addRole();
           break;
 
-        case "Update Employee Role":
+        case "Add department":
+          addDepartment();
+          break;
+
+        case "Update employee role":
           updateRole();
-          break;
-
-        case "Update Employee Manager":
-          updateManager();
           break;
 
         case "Exit":
@@ -77,3 +78,42 @@ function startSearch = () => {
     });
   return;
 }
+
+const employeeSearch = () => {
+  connection.query(
+    "SELECT * FROM employee",
+
+    (error, data) => {
+      if (error) throw error;
+      console.table(data);
+
+      startSearch();
+    }
+  );
+};
+
+const deptSearch = () => {
+  connection.query(
+    "SELECT * FROM department",
+
+    (error, data) => {
+      if (error) throw error;
+      console.table(data);
+
+      startSearch();
+    }
+  );
+};
+
+const roleSearch = () => {
+  connection.query(
+    "SELECT * FROM role",
+
+    (error, data) => {
+      if (error) throw error;
+      console.table(data);
+
+      startSearch();
+    }
+  );
+};
