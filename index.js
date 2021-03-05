@@ -1,7 +1,7 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
 const { printTable } = require("console-table-printer");
-var colors = require("colors");
+require("colors");
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -72,7 +72,7 @@ function startSearch() {
           break;
 
         default:
-          console.log(`Invalid action`);
+          console.log(`Goodbye, please close terminal.`.green);
           break;
       }
       return;
@@ -95,7 +95,7 @@ const employeeSearch = () => {
 
     (err, data) => {
       if (err) throw err;
-      printTable(data);
+      console.table(data);
 
       startSearch();
     }
@@ -132,7 +132,7 @@ const roleSearch = () => {
 };
 
 //====================================================================
-//Add functions
+//Add employee function
 //====================================================================
 
 const addEmployee = () => {
@@ -189,12 +189,92 @@ const addEmployee = () => {
             },
             (err) => {
               if (err) throw err;
-              employeeSearch();
               startSearch();
-              console.log("\nNew employee has been added!\n".green);
+              console.log(`\nNew employee has been added!\n`.green);
             }
           );
         });
     });
+  });
+};
+
+//====================================================================
+//Add role function
+//====================================================================
+
+const addRole = () => {
+  connection.query("select * from department", (err, response) => {
+    if (err) throw err;
+    const departmentList = response.map((department) => {
+      return {
+        name: department.name,
+        value: department.id,
+      };
+    });
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "title",
+          message: "Please enter role title",
+        },
+        {
+          type: "list",
+          name: "deptId",
+          message: "Please select the role's department",
+          choices: departmentList,
+        },
+        {
+          type: "input",
+          name: "salary",
+          message: "Please enter role's base salary",
+        },
+      ])
+      .then((response) => {
+        connection.query(
+          "INSERT INTO role SET ?",
+          {
+            title: response.title,
+            salary: response.salary,
+            department_id: response.deptId,
+          },
+          (err) => {
+            if (err) throw err;
+            console.log(`\nNew role has been added!\n`.green);
+            startSearch();
+          }
+        );
+      });
+  });
+};
+
+//====================================================================
+//Add dept function
+//====================================================================
+
+const addDepartment = () => {
+  connection.query("select * from department", (err) => {
+    if (err) throw err;
+    inquirer
+      .prompt([
+        {
+          type: "input",
+          name: "addDepartment",
+          message: "Please enter department name",
+        },
+      ])
+      .then((response) => {
+        connection.query(
+          "INSERT INTO department SET ?",
+          {
+            name: response.addDepartment,
+          },
+          (err) => {
+            if (err) throw err;
+            console.log(`\nNew department has been added!\n`.green);
+            startSearch();
+          }
+        );
+      });
   });
 };
