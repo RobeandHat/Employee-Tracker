@@ -1,6 +1,7 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
-require("console.table");
+const { printTable } = require("console-table-printer");
+var colors = require("colors");
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -29,10 +30,10 @@ function startSearch() {
         "View all employees",
         "View all departments",
         "View all roles",
-        "Add department",
-        "Add role",
         "Add employee",
         "Update employee role",
+        "Add role",
+        "Add department",
         "exit",
       ],
     })
@@ -79,7 +80,9 @@ function startSearch() {
   return;
 }
 
+//=======================================================================
 //Search functions
+//=======================================================================
 
 const employeeSearch = () => {
   connection.query(
@@ -92,7 +95,7 @@ const employeeSearch = () => {
 
     (err, data) => {
       if (err) throw err;
-      console.table(data);
+      printTable(data);
 
       startSearch();
     }
@@ -130,4 +133,68 @@ const roleSearch = () => {
 
 //====================================================================
 //Add functions
-//=================================================================
+//====================================================================
+
+const addEmployee = () => {
+  connection.query("select * from role", (err, response) => {
+    if (err) throw err;
+    const roles = response.map((role) => {
+      return {
+        value: role.id,
+        name: role.title,
+      };
+    });
+
+    connection.query("select * from employee", (err, response) => {
+      if (err) throw err;
+      const managers = response.map((employee) => {
+        return {
+          value: employee.id,
+          name: employee.first_name + " " + employee.last_name,
+        };
+      });
+      inquirer
+        .prompt([
+          {
+            type: "input",
+            name: "firstName",
+            message: "Enter employee's first name.",
+          },
+          {
+            type: "input",
+            name: "lastName",
+            message: "Enter employee's last name",
+          },
+          {
+            type: "list",
+            message: "Select employee's role.",
+            name: "role",
+            choices: roles,
+          },
+          {
+            type: "list",
+            message: "Select employee's manager",
+            name: "manager",
+            choices: managers,
+          },
+        ])
+        .then((response) => {
+          connection.query(
+            "INSERT INTO employee SET ?",
+            {
+              first_name: response.firstName,
+              last_name: response.lastName,
+              role_id: response.role,
+              manager_id: response.manager,
+            },
+            (err) => {
+              if (err) throw err;
+              employeeSearch();
+              startSearch();
+              console.log("\nNew employee has been added!\n".green);
+            }
+          );
+        });
+    });
+  });
+};
