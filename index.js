@@ -79,6 +79,8 @@ function startSearch() {
   return;
 }
 
+//Search functions
+
 const employeeSearch = () => {
   connection.query(
     "SELECT * FROM employee",
@@ -117,3 +119,50 @@ const roleSearch = () => {
     }
   );
 };
+
+//Employee add inquirer
+
+//first_name, last_name, role_id, manager_id)
+
+function addEmployee() {
+  inquirer
+    .prompt([
+      {
+        type: "input",
+        message: "Please enter employee's first name",
+        name: "firstName",
+      },
+
+      {
+        type: "input",
+        message: "Please enter employee's last name",
+        name: "lastName",
+      },
+      {
+        type: "input",
+        message: "Please enter employee's role ID number",
+        name: "roleId",
+      },
+      {
+        type: "input",
+        message: "Please enter the employee's manager's ID number",
+        name: "manId",
+      },
+    ])
+    .then((response) => {
+      connection.query(
+        "INSERT INTO employee SET ?",
+        {
+          first_name: response.firstName,
+          last_name: response.lastName,
+          role_id: response.roleId,
+          manager_id: response.manId,
+        },
+        (err) => {
+          if (err) throw err;
+          console.log("\nNew employee has been added");
+          startSearch();
+        }
+      );
+    });
+}
