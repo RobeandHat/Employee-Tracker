@@ -1,6 +1,6 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
-const cTable = require("console.table");
+require("console.table");
 
 const connection = mysql.createConnection({
   host: "localhost",
@@ -83,10 +83,15 @@ function startSearch() {
 
 const employeeSearch = () => {
   connection.query(
-    "SELECT * FROM employee",
+    `SELECT employee.id, employee.first_name, employee.last_name, role.title, CONCAT(manager.first_name, " ", manager.last_name) manager
+        FROM employee 
+        LEFT JOIN role
+        ON employee.role_id=role.id
+        LEFT JOIN employee manager
+        ON manager.id=employee.manager_id;`,
 
-    (error, data) => {
-      if (error) throw error;
+    (err, data) => {
+      if (err) throw err;
       console.table(data);
 
       startSearch();
@@ -98,8 +103,8 @@ const deptSearch = () => {
   connection.query(
     "SELECT * FROM department",
 
-    (error, data) => {
-      if (error) throw error;
+    (err, data) => {
+      if (err) throw err;
       console.table(data);
 
       startSearch();
@@ -109,10 +114,13 @@ const deptSearch = () => {
 
 const roleSearch = () => {
   connection.query(
-    "SELECT * FROM role",
+    `SELECT role.id, role.title, role.salary, (department.name) department
+    FROM role 
+    LEFT JOIN department
+    ON role.department_id = department.id;`,
 
-    (error, data) => {
-      if (error) throw error;
+    (err, data) => {
+      if (err) throw err;
       console.table(data);
 
       startSearch();
@@ -120,49 +128,6 @@ const roleSearch = () => {
   );
 };
 
-//Employee add inquirer
-
-//first_name, last_name, role_id, manager_id)
-
-function addEmployee() {
-  inquirer
-    .prompt([
-      {
-        type: "input",
-        message: "Please enter employee's first name",
-        name: "firstName",
-      },
-
-      {
-        type: "input",
-        message: "Please enter employee's last name",
-        name: "lastName",
-      },
-      {
-        type: "input",
-        message: "Please enter employee's role ID number",
-        name: "roleId",
-      },
-      {
-        type: "input",
-        message: "Please enter the employee's manager's ID number",
-        name: "manId",
-      },
-    ])
-    .then((response) => {
-      connection.query(
-        "INSERT INTO employee SET ?",
-        {
-          first_name: response.firstName,
-          last_name: response.lastName,
-          role_id: response.roleId,
-          manager_id: response.manId,
-        },
-        (err) => {
-          if (err) throw err;
-          console.log("\nNew employee has been added");
-          startSearch();
-        }
-      );
-    });
-}
+//====================================================================
+//Add functions
+//=================================================================
