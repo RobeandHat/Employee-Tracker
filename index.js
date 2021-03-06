@@ -1,6 +1,6 @@
 const inquirer = require("inquirer");
 const mysql = require("mysql");
-const { printTable } = require("console-table-printer");
+require("console-table-printer");
 require("colors");
 
 const connection = mysql.createConnection({
@@ -64,7 +64,7 @@ function startSearch() {
           break;
 
         case "Update employee role":
-          updateRole();
+          updateEmployeeRole();
           break;
 
         case "Exit":
@@ -276,5 +276,58 @@ const addDepartment = () => {
           }
         );
       });
+  });
+};
+
+//====================================================================
+//Update employee roles
+//====================================================================
+
+const updateEmployeeRole = () => {
+  connection.query("select * from role", (err, response) => {
+    if (err) throw err;
+    const updatedEmployeeRole = response.map((role) => {
+      return {
+        name: role.title,
+        value: role.id,
+      };
+    });
+
+    connection.query("select * from employee", (err, response) => {
+      if (err) throw err;
+      const selectEmployee = response.map((employee) => {
+        return {
+          value: employee.id,
+          name: employee.first_name + " " + employee.last_name,
+        };
+      });
+      inquirer
+        .prompt([
+          {
+            type: "list",
+            name: "employee",
+            message: "Select employee to update their role",
+            choices: selectEmployee,
+          },
+          {
+            type: "list",
+            name: "newRole",
+            message: "Select the employee's new role",
+            choices: updatedEmployeeRole,
+          },
+        ])
+        .then((response) => {
+          let updateEmployee = response.employee;
+          let newRole = response.newRole;
+
+          connection.query(
+            `update employee set role_id=${newRole} where id=${updateEmployee}`
+          );
+
+          console.log("Employee role updated!.".green);
+
+          startSearch();
+        });
+    });
   });
 };
